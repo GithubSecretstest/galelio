@@ -1,0 +1,42 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class OpenSSHPrivateKeyReader {
+    public static void main(String[] args) {
+        String privateKeyFilePath = "private_key.txt"; // Path to your private key file
+
+        try {
+            String privateKey = readPrivateKey(privateKeyFilePath);
+            System.out.println("OpenSSH Private Key:");
+            System.out.println(privateKey);
+        } catch (IOException e) {
+            System.err.println("Error reading private key: " + e.getMessage());
+        }
+    }
+
+    private static String readPrivateKey(String privateKeyFilePath) throws IOException {
+        StringBuilder privateKeyBuilder = new StringBuilder();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(privateKeyFilePath))) {
+            String line;
+            boolean insideKey = false;
+
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")) {
+                    insideKey = true;
+                } else if (line.startsWith("-----END OPENSSH PRIVATE KEY-----")) {
+                    insideKey = false;
+                    privateKeyBuilder.append(line).append("\n");
+                    break; // Stop reading after END line
+                }
+
+                if (insideKey) {
+                    privateKeyBuilder.append(line).append("\n");
+                }
+            }
+        }
+
+        return privateKeyBuilder.toString().trim();
+    }
+}
